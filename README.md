@@ -30,11 +30,13 @@ Efficient bit-level I/O
 Statistical modeling with cumulative frequency ranges
 
 # How to Use
+Input file path example: C:\Users\Admin\Pictures\jake.png
+Output file example: C:\Users\Admin\Pictures\jake.hu
 Compressing a File
 
 Select option 1 from the main menu
 Choose your compression algorithm (1=Huffman, 2=LZW, 3=Arithmetic)
-Enter the input file path
+Enter the input file path 
 Enter the output file path
 
 Decompressing a File
