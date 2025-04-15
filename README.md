@@ -39,6 +39,10 @@ Statistical modeling with cumulative frequency ranges
 
 *When decompressing a file, must choose the same algorithm as compressing
 
+*Test cases: https://drive.google.com/drive/folders/1pARgdz7JRKguobXHpDxYsLR1zyQ5Qrqo?usp=drive_link 
+
+
+
 1. Compressing a File
 
 Select option 1 from the main menu
