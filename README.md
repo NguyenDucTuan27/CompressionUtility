@@ -31,32 +31,33 @@ Statistical modeling with cumulative frequency ranges
 
 # How to Use
 
-Input file path example: C:\Users\Admin\Pictures\jake.png
+*Input file path example: C:\Users\Admin\Pictures\jake.png
 
-Output file example: C:\Users\Admin\Pictures\jake.hu
+*Output file example: C:\Users\Admin\Pictures\jake.hu
 
-Compressing a File
+
+1. Compressing a File
 
 Select option 1 from the main menu
 Choose your compression algorithm (1=Huffman, 2=LZW, 3=Arithmetic)
 Enter the input file path 
 Enter the output file path
 
-Decompressing a File
+2. Decompressing a File
 
 Select option 2 from the main menu
 Choose the same algorithm used for compression
 Enter the compressed file path
 Enter the output file path
 
-Compressing a Directory
+3. Compressing a Directory
 
 Select option 3 from the main menu
 Enter the directory path
 Enter the output ZIP file path
 Choose a compression strategy (single algorithm or best-fit)
 
-Extracting an Archive
+4. Extracting an Archive
 
 Select option 4 from the main menu
 Enter the archive path
