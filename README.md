@@ -30,8 +30,11 @@ Efficient bit-level I/O
 Statistical modeling with cumulative frequency ranges
 
 # How to Use
+
 Input file path example: C:\Users\Admin\Pictures\jake.png
+
 Output file example: C:\Users\Admin\Pictures\jake.hu
+
 Compressing a File
 
 Select option 1 from the main menu
