@@ -29,7 +29,7 @@ Handles underflow with E1/E2/E3 rescaling
 Efficient bit-level I/O
 Statistical modeling with cumulative frequency ranges
 
-How to Use
+# How to Use
 Compressing a File
 
 Select option 1 from the main menu
