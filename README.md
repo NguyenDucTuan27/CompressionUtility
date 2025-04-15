@@ -35,6 +35,9 @@ Statistical modeling with cumulative frequency ranges
 
 *Output file example: C:\Users\Admin\Pictures\jake.hu
 
+*Remove any quotation marks. Provide full path directly to the file/folder. Change file name or extension to .hu / .lzw / .ar is recommended
+
+*When decompressing a file, must choose the same algorithm as compressing
 
 1. Compressing a File
 
