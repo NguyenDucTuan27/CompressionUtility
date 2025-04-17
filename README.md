@@ -26,8 +26,9 @@ Automatic bypass for already-compressed file formats
 A statistical method that encodes the entire message into a single number within an interval. It achieves compression by using fractional bits per symbol.
 Features:
 
-32-bit precision implementation
+32-bit precision implementation\n
 Handles underflow with E1/E2/E3 rescaling
+
 Efficient bit-level I/O
 Statistical modeling with cumulative frequency ranges
 
