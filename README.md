@@ -3,6 +3,7 @@
 This compression utility implements three classic compression algorithms: Huffman coding, Lempel-Ziv-Welch (LZW), and Arithmetic coding. The application provides a command-line interface for compressing and decompressing both individual files and entire directories.
 Algorithms Implemented
 1. Huffman Coding
+   
 A statistical compression technique that assigns variable-length codes to symbols based on their frequencies. More frequent symbols receive shorter codes, resulting in data reduction.
 Features:
 
@@ -11,6 +12,7 @@ Supports both text and binary files
 Bit-level encoding for maximum compression
 
 2. LZW (Lempel-Ziv-Welch)
+   
 A dictionary-based compression algorithm that builds a dictionary of sequences found in the data. It replaces repeating patterns with single codes.
 Features:
 
@@ -20,6 +22,7 @@ Optimized for text files but supports binary data
 Automatic bypass for already-compressed file formats
 
 3. Arithmetic Coding
+   
 A statistical method that encodes the entire message into a single number within an interval. It achieves compression by using fractional bits per symbol.
 Features:
 
