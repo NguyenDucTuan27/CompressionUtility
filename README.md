@@ -123,11 +123,13 @@ Handles underflow with pending bits mechanism
 
 Includes bit-level I/O for output precision
 
-*Limitations*
+# Limitations
 
 Large files (>1GB) may cause memory issues as data is loaded entirely
+
 Compression efficiency varies by file type and content patterns
+
 Pre-compressed files (JPEG, MP3, etc.) typically show little to no additional compression
 
-Notes
+Notes:
 This compression utility was developed as part of a bachelor thesis project to demonstrate the implementation of classical compression algorithms. It balances theoretical correctness with practical usability.
