@@ -91,7 +91,7 @@ Enter the archive path
 
 Enter the destination directory
 
-Technical Details
+# Technical Details
 
 Huffman Implementation
 
