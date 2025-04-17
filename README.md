@@ -93,28 +93,37 @@ Enter the destination directory
 
 # Technical Details
 
-Huffman Implementation
+1. Huffman Implementation
 
 Uses binary tree structure for Huffman codes
+
 Serializes tree structure in compressed output
+
 Bit-packing for efficient code storage
+
 Handles edge cases like single-character files
 
-LZW Implementation
+2. LZW Implementation
 
 Uses variable bit-width codes (9-12 bits)
+
 Implements dictionary growth and reset mechanisms
+
 Detects and bypasses already-compressed formats
+
 Uses custom byte sequence comparison for dictionary lookups
 
-Arithmetic Implementation
+3. Arithmetic Implementation
 
 32-bit precision for high accuracy
+
 Implements range narrowing and scaling
+
 Handles underflow with pending bits mechanism
+
 Includes bit-level I/O for output precision
 
-Limitations
+*Limitations*
 
 Large files (>1GB) may cause memory issues as data is loaded entirely
 Compression efficiency varies by file type and content patterns
