@@ -8,7 +8,9 @@ A statistical compression technique that assigns variable-length codes to symbol
 Features:
 
 Binary Huffman tree encoding/decoding
+
 Supports both text and binary files
+
 Bit-level encoding for maximum compression
 
 2. LZW (Lempel-Ziv-Welch)
@@ -17,8 +19,11 @@ A dictionary-based compression algorithm that builds a dictionary of sequences f
 Features:
 
 Variable-width code implementation (9-12 bits)
+
 Adaptive dictionary with reset mechanism
+
 Optimized for text files but supports binary data
+
 Automatic bypass for already-compressed file formats
 
 3. Arithmetic Coding
@@ -27,9 +32,11 @@ A statistical method that encodes the entire message into a single number within
 Features:
 
 32-bit precision implementation\n
+
 Handles underflow with E1/E2/E3 rescaling
 
 Efficient bit-level I/O
+
 Statistical modeling with cumulative frequency ranges
 
 # How to Use
@@ -49,31 +56,43 @@ Statistical modeling with cumulative frequency ranges
 1. Compressing a File
 
 Select option 1 from the main menu
+
 Choose your compression algorithm (1=Huffman, 2=LZW, 3=Arithmetic)
+
 Enter the input file path 
+
 Enter the output file path
 
 2. Decompressing a File
 
 Select option 2 from the main menu
+
 Choose the same algorithm used for compression
+
 Enter the compressed file path
+
 Enter the output file path
 
 3. Compressing a Directory
 
 Select option 3 from the main menu
+
 Enter the directory path
+
 Enter the output ZIP file path
+
 Choose a compression strategy (single algorithm or best-fit)
 
 4. Extracting an Archive
 
 Select option 4 from the main menu
+
 Enter the archive path
+
 Enter the destination directory
 
 Technical Details
+
 Huffman Implementation
 
 Uses binary tree structure for Huffman codes
