@@ -1,6 +1,5 @@
 # CompressionUtility
 
-Overview
 This compression utility implements three classic compression algorithms: Huffman coding, Lempel-Ziv-Welch (LZW), and Arithmetic coding. The application provides a command-line interface for compressing and decompressing both individual files and entire directories.
 Algorithms Implemented
 1. Huffman Coding
