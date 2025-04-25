@@ -7,8 +7,8 @@ namespace LZW
 {
     public class LZWcompression : ICompressionAlgorithm
     {
-        private const int INITIAL_BITS = 9;      // initial size of dictionary codes
-        private const int MAX_BITS = 12;         // maximum size of dictionary codes
+        private const int FIXED_BITS = 12;      // fixed size of dictionary codes
+        private const int MAX_CODE = (1 << FIXED_BITS) - 1;  // 4095 for 12 bits
 
         private const int EOS_CODE = 256;        // code for end of compressed data
         private const int CLEAR_CODE = 257;      // code for clear/reset dictionary
@@ -25,45 +25,39 @@ namespace LZW
         {
             try
             {
-                // Check if this file is likely already compressed
                 bool isLikelyCompressed = IsLikelyCompressedFile(inputFilePath);
+                if (isLikelyCompressed)
+                {
+                    Console.WriteLine($"Note: {inputFilePath} is likely already compressed, but attempting compression anyway.");
+                }
+
                 byte[] inputData = File.ReadAllBytes(inputFilePath);
 
                 using (FileStream outFile = File.Create(outputFilePath))
                 using (BinaryWriter writer = new BinaryWriter(outFile))
                 {
-                    // Write metadata
                     writer.Write(Path.GetExtension(inputFilePath));
                     writer.Write(inputData.Length);
-
-                    if (isLikelyCompressed)
-                    {
-                        writer.Write(false); // flag: not compressed
-                        writer.Write(inputData);
-                        Console.WriteLine($"Skipped compression for {inputFilePath} (likely already compressed)");
-                        return;
-                    }
-
-                    using (MemoryStream compressedData = new MemoryStream()) //in-memory buffer to hold compressed data
-                    using (BitOutputStream bitStream = new BitOutputStream(compressedData)) // bit-level writing
+                    using (MemoryStream compressedData = new MemoryStream())
+                    using (BitOutputStream bitStream = new BitOutputStream(compressedData))
                     {
                         CompressToStream(inputData, bitStream);
                         bitStream.Flush();
 
-                        byte[] compressed = compressedData.ToArray(); // convert memory stream to byte array
+                        byte[] compressed = compressedData.ToArray();
 
-                        if (compressed.Length < inputData.Length)
+                        bool wasEffective = compressed.Length < inputData.Length;
+                        writer.Write(true);
+                        writer.Write(compressed.Length);
+                        writer.Write(compressed);
+
+                        if (wasEffective)
                         {
-                            writer.Write(true); // flag compressed
-                            writer.Write(compressed.Length);
-                            writer.Write(compressed);
-                            Console.WriteLine($"Compressed {inputFilePath} from {inputData.Length} to {compressed.Length} bytes");
+                            Console.WriteLine($"Compressed {inputFilePath} from {inputData.Length} to {compressed.Length} bytes (ratio: {(double)inputData.Length / compressed.Length:F2}x)");
                         }
                         else
                         {
-                            writer.Write(false); // flag not compressed
-                            writer.Write(inputData);
-                            Console.WriteLine($"LZW ineffective for {inputFilePath}, stored uncompressed");
+                            Console.WriteLine($"Attempted compression of {inputFilePath}, but resulted in larger file: {inputData.Length} to {compressed.Length} bytes (ratio: {(double)inputData.Length / compressed.Length:F2}x)");
                         }
                     }
                 }
@@ -127,28 +121,28 @@ namespace LZW
                 throw;
             }
         }
-        /* Core LZW algorithm
+
+        /* Core LZW algorithm with fixed 12-bit codes
          *  initialize dictionary byte sequences to integer codes, 256 codes for single bytes 
-         *  skip 256 and 257 for EOS and clear markers. write clear_code with current bit size
+         *  skip 256 and 257 for EOS and clear markers. write clear_code
          *  process each byte in the input
          *      check if newPattern exist
          *          if yes-> keep growing
          *          if not -> output current pattern code
-         *              check if the dict reach current bit size to extend the dict until bit size reaches 12 -> reset
+         *              check if the dict is full -> reset
          *  output code for remaining pattern
          *  write EOS code*/
         private void CompressToStream(byte[] data, BitOutputStream output)
-        {  
+        {
             Dictionary<List<byte>, int> dictionary = new Dictionary<List<byte>, int>(new ByteListComparer());
             for (int i = 0; i < 256; i++)
             {
                 dictionary[new List<byte> { (byte)i }] = i;
             }
 
-            int currentCodeSize = INITIAL_BITS;
             int nextCode = FIRST_CODE;
 
-            output.WriteBits(CLEAR_CODE, currentCodeSize);
+            output.WriteBits(CLEAR_CODE, FIXED_BITS);
 
             List<byte> pattern = new List<byte>();
 
@@ -163,40 +157,36 @@ namespace LZW
                 }
                 else
                 {
-                    output.WriteBits(dictionary[pattern], currentCodeSize);
-                    int maxCode = (1 << currentCodeSize) - 1; //2^currentCodeSize - 1
-                    if (nextCode <= maxCode)
+                    output.WriteBits(dictionary[pattern], FIXED_BITS);
+
+                    if (nextCode <= MAX_CODE)
                     {
                         dictionary[newPattern] = nextCode++;
-
-                        if (nextCode == maxCode && currentCodeSize < MAX_BITS)
+                    }
+                    else
+                    {
+                        output.WriteBits(CLEAR_CODE, FIXED_BITS);
+                        dictionary.Clear();
+                        for (int i = 0; i < 256; i++)
                         {
-                            currentCodeSize++;
+                            dictionary[new List<byte> { (byte)i }] = i;
                         }
-                        else if (nextCode > maxCode && currentCodeSize == MAX_BITS)
-                        {
-                            output.WriteBits(CLEAR_CODE, currentCodeSize);
-                            dictionary.Clear();
-                            for (int i = 0; i < 256; i++)
-                            {
-                                dictionary[new List<byte> { (byte)i }] = i;
-                            }
-                            nextCode = FIRST_CODE;
-                            currentCodeSize = INITIAL_BITS;
-                        }
+                        nextCode = FIRST_CODE;
                     }
                     pattern = new List<byte> { b };
                 }
             }
             if (pattern.Count > 0)
             {
-                output.WriteBits(dictionary[pattern], currentCodeSize);
+                output.WriteBits(dictionary[pattern], FIXED_BITS);
             }
-            output.WriteBits(EOS_CODE, currentCodeSize); //EOS
+
+            output.WriteBits(EOS_CODE, FIXED_BITS);
         }
-        /* Reverse compression process
+
+        /* Reverse compression process with fixed 12-bit codes
          *  initialize dictionary byte sequences to integer codes, 256 codes for single bytes 
-         *  skip 256 and 257 for EOS and clear markers. write clear_code with current bit size
+         *  skip 256 and 257 for EOS and clear markers
          *  while loop to read from input stream
          *      check for EOS and Clear_code markers
          *      handle other codes
@@ -212,10 +202,9 @@ namespace LZW
                 dictionary[i] = new List<byte> { (byte)i };
             }
 
-            int currentCodeSize = INITIAL_BITS;
             int nextCode = FIRST_CODE;
 
-            int code = input.ReadBits(currentCodeSize); //clear code
+            int code = input.ReadBits(FIXED_BITS);
             if (code != CLEAR_CODE)
             {
                 throw new InvalidDataException("Invalid LZW data - missing clear code");
@@ -226,9 +215,10 @@ namespace LZW
 
             while (true)
             {
-                code = input.ReadBits(currentCodeSize);
+                code = input.ReadBits(FIXED_BITS);
                 if (code == EOS_CODE)
                     break;
+
                 if (code == CLEAR_CODE)
                 {
                     dictionary.Clear();
@@ -237,41 +227,33 @@ namespace LZW
                         dictionary[i] = new List<byte> { (byte)i };
                     }
                     nextCode = FIRST_CODE;
-                    currentCodeSize = INITIAL_BITS;
                     oldCode = -1;
                     continue;
                 }
+
                 if (dictionary.ContainsKey(code))
                 {
                     pattern = dictionary[code];
                     result.AddRange(pattern);
-                    if (oldCode >= 0)
+
+                    if (oldCode >= 0 && nextCode <= MAX_CODE)
                     {
-                        int maxCode = (1 << currentCodeSize) - 1; //2^currentCodeSize - 1
-                        if (nextCode <= maxCode)
-                        {
-                            List<byte> newPattern = new List<byte>(dictionary[oldCode]);
-                            newPattern.Add(pattern[0]);
-                            dictionary[nextCode++] = newPattern;
-                            if (nextCode == maxCode && currentCodeSize < MAX_BITS)
-                            {
-                                currentCodeSize++;
-                            }
-                        }
+                        List<byte> newPattern = new List<byte>(dictionary[oldCode]);
+                        newPattern.Add(pattern[0]);
+                        dictionary[nextCode++] = newPattern;
                     }
                 }
                 else
-                { //special case for pattern + pattern[0]
+                {
+                    // pattern + pattern[0]
                     if (code == nextCode && oldCode >= 0)
                     {
                         pattern = new List<byte>(dictionary[oldCode]);
                         pattern.Add(pattern[0]);
                         result.AddRange(pattern);
-                        dictionary[nextCode++] = pattern;
-                        int maxCode = (1 << currentCodeSize) - 1;
-                        if (nextCode == maxCode && currentCodeSize < MAX_BITS)
+                        if (nextCode <= MAX_CODE)
                         {
-                            currentCodeSize++;
+                            dictionary[nextCode++] = pattern;
                         }
                     }
                     else
@@ -279,15 +261,12 @@ namespace LZW
                         throw new InvalidDataException($"Invalid LZW code: {code}");
                     }
                 }
-
                 oldCode = code;
                 if (result.Count >= originalSize)
                     break;
             }
-
             return result.ToArray();
         }
-
         /* Check for already compressed formats*/
         private bool IsLikelyCompressedFile(string filePath)
         {
@@ -327,8 +306,6 @@ namespace LZW
             }
         }
 
-        // Bit-level I/O classes
-        // Bit-level I/O classes
         private class BitOutputStream : IDisposable
         {
             private Stream stream;
@@ -353,11 +330,11 @@ namespace LZW
 
             private void WriteBit(int bit)
             {
-                // Add bit to buffer
+                //Add bit to buffer
                 buffer = (byte)((buffer << 1) | (bit & 1));
                 bitsInBuffer++;
 
-                // Write buffer when full
+                //Write buffer when full
                 if (bitsInBuffer == 8)
                 {
                     stream.WriteByte(buffer);
@@ -380,7 +357,6 @@ namespace LZW
             public void Dispose()
             {
                 Flush();
-
             }
         }
 
@@ -413,7 +389,7 @@ namespace LZW
             /* Bits are written form right to left where 8th bit is MSB*/
             private int ReadBit()
             {
-                // Refill buffer if needed
+                // refill buffer if needed
                 if (bitsLeft == 0)
                 {
                     int nextByte = stream.ReadByte();
@@ -436,7 +412,6 @@ namespace LZW
 
                 return bit;
             }
-
             public void Dispose()
             {
             }
